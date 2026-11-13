@@ -8,7 +8,7 @@ const site = {
   coverMark: 'Ψ', coverLabel: 'פסיכיאטריה',
   chaptersTitle: 'נושאי הקורס',
   storageKey: 'tau-psychiatry-notebook-v1',
-  modules: ['chapters','practice','exams','search'],
+  modules: ['chapters','practice','exams','cases','search'],
   sourceLabel: 'למקור',
   chapterSourceLabel: 'ההרצאה המוקלטת במודל',
   examsTitle: 'שחזורים ובחנים',
