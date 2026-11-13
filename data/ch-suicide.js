@@ -21,7 +21,7 @@ chapters.suicide = {
    '- **מחלה גופנית כרונית** וכאב כרוני.',
    '- היסטוריה משפחתית של אובדנות.',
    '- **הבעת כוונה** בפני אחרים.',
-   'זכרו את **SAD PERSONS**: Sex (זכר), Age, Depression, Previous attempt, Ethanol, Rational thinking loss (פסיכוזה), Social support lacking, Organized plan, No spouse, Sickness.',
+   'זכרו את **SAD PERSONS**, בגרסה שבסרטון: **S**ex (זכר), **A**ge (צעירים וקשישים), **D**epression, **P**revious attempt (החשוב ביותר), **E**xcessive alcohol or substance use, **R**ational thinking loss (פסיכוזה), **S**ickness (מחלה כרונית), **O**rganized plan, **N**o social support, **S**tated future intent (הבעת כוונה).',
    'גם בלי גורמי סיכון, אדם יכול לפגוע בעצמו כמעשה **אימפולסיבי** ברגע של לחץ.',
    '! ניסיון קודם הוא גורם הסיכון המשמעותי ביותר. תמיכה חברתית חזקה היא גורם **מגן**, לא גורם סיכון.'
   ]],
