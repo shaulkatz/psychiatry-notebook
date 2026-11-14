@@ -101,7 +101,10 @@ function presentationLink(topicId=activeTopic){
   return '<a href="'+safe(src.url)+'" target="_blank" rel="noopener">'+safe(src.label||SITE.chapterSourceLabel)+'</a>'+(src.note?' <small>('+safe(src.note)+')</small>':'');
 }
 // מילה מודגשת: **טקסט**
-function inline(t){return safe(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');}
+// עוטף רצפים באנגלית ב־<bdi> כדי שסוגריים ופסיקים לא יתהפכו בתוך טקסט עברי
+function bidi(h){return h.split(/(&[#a-z0-9]+;)/i).map(p=>p.startsWith('&')&&p.endsWith(';')?p:p.replace(/[A-Za-z0-9α-ωΑ-Ω][A-Za-z0-9α-ωΑ-Ω\-+.,:\/ ]*[A-Za-z0-9α-ωΑ-Ω]|[A-Za-zα-ω]/g,m=>/[A-Za-zα-ωΑ-Ω]/.test(m)?'<bdi>'+m+'</bdi>':m)).join('');}
+function txt(t){return bidi(safe(t));}
+function inline(t){return bidi(safe(t)).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');}
 // בלוקים: "|" שורת טבלה, "- " פריט ברשימה, "### " כותרת משנה, "! " תיבת "לזכור", אחרת פסקה
 function sectionBody(blocks){
   let output='', open=null, columns=0;
@@ -185,7 +188,7 @@ function exams(id,sub){
     return '<section class="exam-panel"><h3>'+safe(item.title)+'</h3><p>'+safe(item.origin)+'</p>'+(count?'':'<p>'+status+'</p>')+(count?'<div class="chapter-progress">'+meter(s,item.title)+'<span>'+statLine(s)+'</span></div>':'')+(count?'<a class="primary" href="#exams/'+item.id+'">'+(item.opening?'לתרגול בוחן הפתיחה':'לתרגול השחזור')+' ←</a> ':'')+(item.url?'<a href="'+safe(item.url)+'" target="_blank" rel="noopener">'+safe(item.urlLabel||SITE.sourceLabel)+'</a>':'')+'</section>';
   }).join('');
   const cardsDone=examCardsData.filter(c=>(state.cards||{})[c.id]).length;
-  const cardsSection=examCardsData.length?'<section><h2>מבחן סוף הסבב</h2><div class="recon-list"><section class="exam-panel"><h3>כרטיסיות מבחן סוף הסבב</h3><p>'+examCardsData.length+' מקרים כמו במבחן: מקרה בשני שלבים עם שאלות פתוחות. כותבים תשובה ובודקים אותה מול מפתח.</p><p>'+cardsDone+' מתוך '+examCardsData.length+' נעשו.</p><a class="primary" href="#exams/cards">לאינדקס הכרטיסיות ←</a></section></div></section>':'';
+  const cardsSection=examCardsData.length?'<section><h2>'+safe(SITE.cardsTitle||'מבחן סוף')+'</h2><div class="recon-list"><section class="exam-panel"><h3>'+safe(SITE.cardsHeading||'כרטיסיות מבחן סוף')+'</h3><p>'+examCardsData.length+' מקרים כמו במבחן: מקרה בשני שלבים עם שאלות פתוחות. כותבים תשובה ובודקים אותה מול מפתח.</p><p>'+cardsDone+' מתוך '+examCardsData.length+' נעשו.</p><a class="primary" href="#exams/cards">לאינדקס הכרטיסיות ←</a></section></div></section>':'';
   main.innerHTML='<a class="back" href="#home">חזרה לנושאים</a><header class="chapter-header"><h1>שחזורי בחינות</h1><p>בחרו שחזור לפי המועד והנוסח.</p></header>'+(reconstructionSets.some(item=>item.opening)?'<section><h2>בחני פתיחה</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>item.opening))+'</div></section>':'')+'<section><h2>'+(reconstructionSets.some(item=>item.opening)?'שחזורים נוספים':'בוחן המבוא')+'</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>!item.opening))+'</div></section>'+cardsSection;
 }
 // ===== כרטיסיות מבחן סוף (שאלות פתוחות): כותבים תשובה, ואז מפתח כרשימת נקודות עם סימון אוטומטי לפי מילות מפתח (בלי AI)
@@ -199,7 +202,7 @@ function cardScores(){state.cards=state.cards||{};return state.cards;}
 function examCardsIndex(){
   const sc=cardScores();
   const done=examCardsData.filter(c=>sc[c.id]).length;
-  main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>מבחן סוף הסבב · כרטיסיות</h1><p>כמו במבחן: מקרה בשני שלבים. כותבים תשובה, ואז בודקים אותה מול מפתח של נקודות. נקודות שכתבתם מסומנות אוטומטית, ואפשר לשנות את הסימון.</p><p>'+done+' מתוך '+examCardsData.length+' כרטיסיות נעשו.</p></header><ul class="paper-list">'+examCardsData.map(c=>{const s=sc[c.id];return '<li><a href="#exams/cards/'+c.id+'"><strong>'+safe(c.title)+'</strong><small>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · '+c.years:''))+(s?' · ציון אחרון: '+s.got+'/'+s.total:'')+'</small></a></li>';}).join('')+'</ul>';
+  main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>'+safe(SITE.cardsHeading||'כרטיסיות מבחן סוף')+'</h1><p>כמו במבחן: מקרה בשני שלבים. כותבים תשובה, ואז בודקים אותה מול מפתח של נקודות. נקודות שכתבתם מסומנות אוטומטית, ואפשר לשנות את הסימון.</p><p>'+done+' מתוך '+examCardsData.length+' כרטיסיות נעשו.</p></header><ul class="paper-list">'+examCardsData.map(c=>{const s=sc[c.id];return '<li><a href="#exams/cards/'+c.id+'"><strong>'+safe(c.title)+'</strong><small>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · '+c.years:''))+(s?' · ציון אחרון: '+s.got+'/'+s.total:'')+'</small></a></li>';}).join('')+'</ul>';
 }
 function examCardPage(id){
   const c=examCardsData.find(x=>x.id===id);
@@ -323,11 +326,11 @@ function appearsAlso(q){
 }
 function feedback(q){
   const exam=reconstructionSets.find(item=>item.id===q.topic);
-  const source=exam
-    ? '<p class="source">שאלה '+q.number+' בבוחן</p>'
-    : '<p class="source">'+(presentationLink(q.topic)?presentationLink(q.topic)+' · ':'')+'<a href="#topic/'+q.topic+'/read/'+q.section+'">לסעיף בסיכום</a></p>';
+  const chap=exam?q.section:q.topic, sec=exam?null:q.section;
+  const where=isTopic(chap)?'<p class="source">📖 נלמד בפרק: <a href="#topic/'+chap+(sec?'/read/'+sec:'')+'">'+safe(scopeTitle(chap))+(sec&&sectionName(q)?' · '+safe(sectionName(q)):'')+'</a></p>':'';
+  const source=exam?'<p class="source">שאלה '+q.number+' בבוחן</p>':'';
   const also=appearsAlso(q);
-  return '<section class="feedback">'+(also.length?'<p class="also">⭐ שאלה חוזרת: הופיעה גם ב'+also.map(t=>safe(t)).join(', ')+'</p>':'')+'<p class="explanation">'+safe(q.e)+'</p>'+(q.clarification?'<p class="explanation">'+safe(q.clarification)+'</p>':'')+'<h3>הסבר לכל אפשרות</h3><ol class="review">'+q.a.map((a,i)=>'<li'+(i===q.k?' class="is-correct"':'')+'><strong>'+letters[i]+'. '+safe(a)+'</strong><p>'+safe(q.x[i])+'</p></li>').join('')+'</ol>'+source+'</section>';
+  return '<section class="feedback">'+(also.length?'<p class="also">⭐ שאלה חוזרת: הופיעה גם ב'+also.map(t=>safe(t)).join(', ')+'</p>':'')+'<p class="explanation">'+txt(q.e)+'</p>'+where+(q.clarification?'<p class="explanation">'+safe(q.clarification)+'</p>':'')+'<h3>הסבר לכל אפשרות</h3><ol class="review">'+q.a.map((a,i)=>'<li'+(i===q.k?' class="is-correct"':'')+'><strong>'+letters[i]+'. '+txt(a)+'</strong><p>'+txt(q.x[i])+'</p></li>').join('')+'</ol>'+source+'</section>';
 }
 function breakdownTable(caption,rows){
   return '<h3>'+caption+'</h3><div class="table-scroll" tabindex="0" role="region" aria-label="'+caption+'"><table><thead><tr><th scope="col">נושא</th><th scope="col">נכונות בסבב</th><th scope="col">שאלות שלא נכללו</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
@@ -367,7 +370,8 @@ function practice(presetMode){
     const score=results.filter(Boolean).length;
     const wrongIds=run.ids.filter((id,i)=>!results[i]);
     const list='<h3>השאלות בסבב</h3><ol class="run-list">'+run.ids.map((id,i)=>'<li class="'+(results[i]?'ok':'no')+'"><span class="mark" aria-hidden="true">'+(results[i]?'✓':'✗')+'</span><span>'+safe(byId.get(id).q)+'<small>'+(results[i]?'נכון':'התשובה הנכונה: '+letters[byId.get(id).k]+'. '+safe(byId.get(id).a[byId.get(id).k]))+'</small></span></li>').join('')+'</ol>';
-    stage.innerHTML='<section class="quiz"><h2 tabindex="-1" id="question">סיכום הסבב</h2><p class="score">'+score+' מתוך '+run.ids.length+'</p><p>תשובות נכונות ('+pct(score,run.ids.length)+'%)</p><div class="actions">'+(wrongIds.length?'<button class="primary" id="retry">חזרה על '+wrongIds.length+' הטעויות מהסבב ←</button>':'')+'<button class="'+(wrongIds.length?'secondary':'primary')+'" id="reset">בחירת סבב נוסף</button></div>'+runBreakdown(run)+list+'</section>';
+    stage.innerHTML='<section class="quiz"><h2 tabindex="-1" id="question">סיכום הסבב</h2><p class="score">'+score+' מתוך '+run.ids.length+'</p><p>תשובות נכונות ('+pct(score,run.ids.length)+'%)</p><div class="actions">'+(wrongIds.length?'<button class="primary" id="retry">חזרה על '+wrongIds.length+' הטעויות מהסבב ←</button>':'')+'<button class="'+(wrongIds.length?'secondary':'primary')+'" id="reset">בחירת סבב נוסף</button><button class="secondary" id="review">→ חזרה על השאלות בסבב</button></div>'+runBreakdown(run)+list+'</section>';
+    stage.querySelector('#review').onclick=()=>{run.idx=0;save();practice();focusQuestion();};
     stage.querySelector('#reset').onclick=()=>{state.runs[activeTopic]=null;save();practice();stage.querySelector('select')?.focus();};
     const retry=stage.querySelector('#retry');
     if(retry)retry.onclick=()=>startRun(shuffle([...wrongIds]));
@@ -376,16 +380,17 @@ function practice(presetMode){
   const q=byId.get(run.ids[run.idx]),selected=run.picks[run.idx],done=Number.isInteger(selected);
   const label=activeTopic==='mixed'?scopeTitle(q.topic)+(sectionName(q)&&isTopic(q.topic)?' · '+sectionName(q):''):sectionName(q);
   const hint=!done&&matchMedia('(hover:hover)').matches?'<p class="kbd-hint">אפשר לענות גם במקלדת: 1–'+q.a.length+'</p>':'';
-  stage.innerHTML='<section class="quiz"><div class="quiz-top"><span>'+safe(label)+'</span><span>שאלה '+(run.idx+1)+' מתוך '+run.ids.length+' · <button type="button" class="link-button" id="quit">יציאה מהסבב</button></span></div><progress max="'+run.ids.length+'" value="'+(run.idx+(done?1:0))+'" aria-label="התקדמות בסבב"></progress><h2 tabindex="-1" id="question">'+safe(q.q)+'</h2><div class="answers" tabindex="-1" role="group" aria-label="'+(done?'התשובה הנכונה היא '+letters[q.k]:'אפשרויות התשובה')+'">'+q.a.map((a,i)=>{
+  stage.innerHTML='<section class="quiz"><div class="quiz-top"><span>'+safe(label)+'</span><span>שאלה '+(run.idx+1)+' מתוך '+run.ids.length+' · <button type="button" class="link-button" id="quit">יציאה מהסבב</button></span></div><progress max="'+run.ids.length+'" value="'+(run.idx+(done?1:0))+'" aria-label="התקדמות בסבב"></progress><h2 tabindex="-1" id="question">'+txt(q.q)+'</h2><div class="answers" tabindex="-1" role="group" aria-label="'+(done?'התשובה הנכונה היא '+letters[q.k]:'אפשרויות התשובה')+'">'+q.a.map((a,i)=>{
     const correct=done&&i===q.k,chosen=done&&i===selected;
-    return '<button type="button" class="answer '+(correct?'correct':chosen?'incorrect':'')+'" '+(done?'disabled':'')+' data-answer="'+i+'"><b>'+letters[i]+'</b><span>'+safe(a)+(correct||chosen?'<small>'+(correct?'תשובה נכונה':'')+(correct&&chosen?' · ':'')+(chosen?'הבחירה שלך':'')+'</small>':'')+'</span></button>';
-  }).join('')+'</div>'+hint+(done?'<p class="verdict '+(selected===q.k?'ok':'no')+'" role="status">'+(selected===q.k?'נכון!':'לא נכון. התשובה הנכונה היא '+letters[q.k]+'.')+'</p>'+feedback(q)+'<button class="primary" id="next">'+(run.idx+1===run.ids.length?'לסיכום הסבב':'לשאלה הבאה')+' ←</button>':'')+'</section>';
+    return '<button type="button" class="answer '+(correct?'correct':chosen?'incorrect':'')+'" '+(done?'disabled':'')+' data-answer="'+i+'"><b>'+letters[i]+'</b><span>'+txt(a)+(correct||chosen?'<small>'+(correct?'תשובה נכונה':'')+(correct&&chosen?' · ':'')+(chosen?'הבחירה שלך':'')+'</small>':'')+'</span></button>';
+  }).join('')+'</div>'+hint+(done?'<p class="verdict '+(selected===q.k?'ok':'no')+'" role="status">'+(selected===q.k?'נכון!':'לא נכון. התשובה הנכונה היא '+letters[q.k]+'.')+'</p>'+feedback(q)+'<button class="primary" id="next">'+(run.idx+1===run.ids.length?'לסיכום הסבב':'לשאלה הבאה')+' ←</button>':'')+(run.idx>0?' <button type="button" class="secondary" id="prev">→ לשאלה הקודמת</button>':'')+'</section>';
   stage.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>answer(Number(b.dataset.answer)));
   stage.querySelector('#quit').onclick=()=>{
     if(run.idx>0&&!confirm('לצאת מהסבב? התשובות שכבר נתת נשמרות בהתקדמות.'))return;
     state.runs[activeTopic]=null;save();practice();
   };
   if(done)stage.querySelector('#next').onclick=()=>{run.idx++;run.t=Date.now();save();practice();focusQuestion();};
+  const prev=stage.querySelector('#prev');if(prev)prev.onclick=()=>{run.idx=Math.max(0,run.idx-1);run.t=Date.now();save();practice();focusQuestion();};
 }
 document.addEventListener('keydown',event=>{
   if(event.ctrlKey||event.metaKey||event.altKey)return;
@@ -474,7 +479,7 @@ function casesPage(id){
   const draw=()=>{
     main.innerHTML='<a class="back" href="#cases">חזרה למקרים</a><header class="chapter-header"><h1>'+safe(c.title)+'</h1></header><article class="case"><p class="lede">'+inline(c.stem)+'</p>'+c.steps.slice(0,step+1).map((s,i)=>{
       const done=Number.isInteger(picks[i]);
-      return '<section class="quiz"><h2>שלב '+(i+1)+'</h2><p>'+inline(s.q)+'</p><div class="answers">'+s.a.map((a,j)=>'<button type="button" class="answer '+(done&&j===s.k?'correct':done&&j===picks[i]?'incorrect':'')+'" '+(done?'disabled':'')+' data-step="'+i+'" data-answer="'+j+'"><b>'+letters[j]+'</b><span>'+safe(a)+'</span></button>').join('')+'</div>'+(done?'<p class="explanation">'+inline(s.e)+'</p>':'')+'</section>';
+      return '<section class="quiz"><h2>שלב '+(i+1)+'</h2><p>'+inline(s.q)+'</p><div class="answers">'+s.a.map((a,j)=>'<button type="button" class="answer '+(done&&j===s.k?'correct':done&&j===picks[i]?'incorrect':'')+'" '+(done?'disabled':'')+' data-step="'+i+'" data-answer="'+j+'"><b>'+letters[j]+'</b><span>'+txt(a)+'</span></button>').join('')+'</div>'+(done?'<p class="explanation">'+inline(s.e)+'</p>':'')+'</section>';
     }).join('')+(Number.isInteger(picks[step])?(step+1<c.steps.length?'<button class="primary" id="next-step">לשלב הבא ←</button>':'<p class="remember"><strong>סוף המקרה.</strong> '+inline(c.takeaway||'')+'</p>'):'')+'</article>';
     main.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{picks[Number(b.dataset.step)]=Number(b.dataset.answer);draw();});
     const n=main.querySelector('#next-step');if(n)n.onclick=()=>{step++;draw();};
@@ -499,7 +504,7 @@ function render(){
   else if(page==='glossary')glossaryPage();
   else if(page==='cases')casesPage(id);
   else home();
-  const title=page==='topic'?scopeTitle(id):page==='exams'&&id==='cards'?(tab&&examCardsData.find(c=>c.id===tab)?examCardsData.find(c=>c.id===tab).title:'מבחן סוף הסבב'):page==='exams'&&id?scopeTitle(id):page==='exams'?'שחזורי בחינות':page==='practice'?'תרגול מעורב':page==='search'?'חיפוש':page==='papers'?'מאמרים':page==='glossary'?'מילון מונחים':page==='cases'?'מקרים':'';
+  const title=page==='topic'?scopeTitle(id):page==='exams'&&id==='cards'?(tab&&examCardsData.find(c=>c.id===tab)?examCardsData.find(c=>c.id===tab).title:(SITE.cardsTitle||'מבחן סוף')):page==='exams'&&id?scopeTitle(id):page==='exams'?'שחזורי בחינות':page==='practice'?'תרגול מעורב':page==='search'?'חיפוש':page==='papers'?'מאמרים':page==='glossary'?'מילון מונחים':page==='cases'?'מקרים':'';
   document.title=(title?title+' | ':'')+SITE.shortTitle;
 }
 // ניווט, כותרת וכותרת תחתונה לפי SITE
