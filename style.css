@@ -231,3 +231,7 @@ mark{background:var(--mark,#f3dfa6);color:inherit;padding:0 1px}
 .card-open details summary{cursor:pointer;font-weight:bold;line-height:1.5}
 .card-open details p{line-height:1.65;margin:8px 0 2px;white-space:pre-wrap}
 .card-open h3{margin:14px 0 4px}
+
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line,rgba(127,127,127,.25))}
+.qnav button{margin:0}
+@media(max-width:720px){.qnav{gap:12px;margin-top:26px}.qnav button{flex:0 1 calc(50% - 6px);min-height:48px;padding-inline:10px;justify-content:center;text-align:center}}
