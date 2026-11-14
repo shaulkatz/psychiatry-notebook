@@ -219,3 +219,15 @@ mark{background:var(--mark,#f3dfa6);color:inherit;padding:0 1px}
   .cover-mark{font-size:72px}
 }
 .wordmark span{width:auto!important;min-width:36px;padding-inline:7px;white-space:nowrap}
+
+/* כרטיסיות מבחן פתוחות */
+.card-open .open-answer{width:100%;box-sizing:border-box;font:inherit;line-height:1.6;padding:12px;border:1px solid var(--line);border-radius:4px;background:var(--white);color:var(--ink);margin:6px 0 12px;resize:vertical}
+.card-open .key-list{list-style:none;padding:0;margin:8px 0 14px;display:grid;gap:8px}
+.card-open .key-list label{display:flex;gap:10px;align-items:flex-start;line-height:1.55;padding:9px 11px;border:1px solid var(--line);border-radius:4px;background:var(--white);cursor:pointer}
+.card-open .key-list input{margin-top:5px;accent-color:var(--green);width:18px;height:18px;flex:none}
+.card-open .key-list input:checked+span{color:var(--ok)}
+.card-open .auto-tag{color:var(--muted);font-size:.8rem;white-space:nowrap}
+.card-open details{border:1px solid var(--line);border-radius:4px;padding:9px 12px;margin:8px 0;background:var(--pale)}
+.card-open details summary{cursor:pointer;font-weight:bold;line-height:1.5}
+.card-open details p{line-height:1.65;margin:8px 0 2px;white-space:pre-wrap}
+.card-open h3{margin:14px 0 4px}

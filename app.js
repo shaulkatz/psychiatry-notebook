@@ -169,7 +169,8 @@ function topic(id,tab){
     main.querySelector('.read-toggle').focus({preventScroll:true});
   };
 }
-function exams(id){
+function exams(id,sub){
+  if(id==='cards'){activeTopic='cards';if(sub)examCardPage(sub);else examCardsIndex();return;}
   const exam=reconstructionSets.find(item=>item.id===id);
   if(exam&&questions.some(q=>q.topic===exam.id)){
     activeTopic=exam.id;
@@ -183,8 +184,59 @@ function exams(id){
     const status=count ? count+' שאלות מעובדות'+(item.total?' מתוך '+item.total+' במקור':'') : 'המקור אותר וממתין לקליטה';
     return '<section class="exam-panel"><h3>'+safe(item.title)+'</h3><p>'+safe(item.origin)+'</p><p>'+status+'</p>'+(count?'<div class="chapter-progress">'+meter(s,item.title)+'<span>'+statLine(s)+'</span></div>':'')+(count?'<a class="primary" href="#exams/'+item.id+'">'+(item.opening?'לתרגול בוחן הפתיחה':'לתרגול השחזור')+' ←</a> ':'')+(item.url?'<a href="'+safe(item.url)+'" target="_blank" rel="noopener">'+safe(item.urlLabel||SITE.sourceLabel)+'</a>':'')+'</section>';
   }).join('');
-  main.innerHTML='<a class="back" href="#home">חזרה לנושאים</a><header class="chapter-header"><h1>שחזורי בחינות</h1><p>בחרו שחזור לפי המועד והנוסח.</p></header>'+(reconstructionSets.some(item=>item.opening)?'<section><h2>בחני פתיחה</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>item.opening))+'</div></section>':'')+'<section><h2>'+(reconstructionSets.some(item=>item.opening)?'שחזורים נוספים':'כל השחזורים')+'</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>!item.opening))+'</div></section>';
+  const cardsDone=examCardsData.filter(c=>(state.cards||{})[c.id]).length;
+  const cardsSection=examCardsData.length?'<section><h2>מבחן סוף הסבב</h2><div class="recon-list"><section class="exam-panel"><h3>שחזור מבחן סוף הסבב · כרטיסיות</h3><p>'+examCardsData.length+' כרטיסיות משחזורי 2018–2022. מקרה בשני שלבים ושאלות פתוחות, כמו במבחן: כותבים תשובה חופשית, ואז בודקים אותה מול מפתח של נקודות (סימון אוטומטי לפי מילות מפתח, בלי AI).</p><p>'+cardsDone+' מתוך '+examCardsData.length+' נעשו.</p><a class="primary" href="#exams/cards">לאינדקס הכרטיסיות ←</a></section></div></section>':'';
+  main.innerHTML='<a class="back" href="#home">חזרה לנושאים</a><header class="chapter-header"><h1>שחזורי בחינות</h1><p>בחרו שחזור לפי המועד והנוסח.</p></header>'+cardsSection+(reconstructionSets.some(item=>item.opening)?'<section><h2>בחני פתיחה</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>item.opening))+'</div></section>':'')+'<section><h2>'+(reconstructionSets.some(item=>item.opening)?'שחזורים נוספים':'כל השחזורים')+'</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>!item.opening))+'</div></section>';
 }
+// ===== כרטיסיות מבחן סוף (שאלות פתוחות): כותבים תשובה, ואז מפתח כרשימת נקודות עם סימון אוטומטי לפי מילות מפתח (בלי AI)
+const examCardsData = typeof examCards==='object' ? examCards : [];
+function normText(t){return String(t||'').toLowerCase().replace(/[֑-ׇ]/g,'').replace(/[־\-–—'"׳״`.,:;!?()\[\]\/\\+*]/g,' ').replace(/\s+/g,' ').trim();}
+function kwHit(text,kws){
+  const t=' '+normText(text)+' ';
+  return kws.some(k=>{const n=normText(k);if(!n)return false;return /^[a-z0-9]{1,3}$/.test(n)?new RegExp('(^|[^a-z0-9])'+n+'([^a-z0-9]|$)').test(t):t.includes(n);});
+}
+function cardScores(){state.cards=state.cards||{};return state.cards;}
+function examCardsIndex(){
+  const sc=cardScores();
+  const done=examCardsData.filter(c=>sc[c.id]).length;
+  main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>מבחן סוף הסבב · כרטיסיות</h1><p>שחזור של כרטיסיות ממבחני סוף הסבב (2018–2022). כמו במבחן: מקרה בשני שלבים ושאלות פתוחות. כותבים תשובה חופשית, ואז נפתח מפתח התשובה כרשימת נקודות. הנקודות שזוהו בתשובה מסומנות אוטומטית לפי מילות מפתח, ואפשר לתקן את הסימון ידנית.</p><p>'+done+' מתוך '+examCardsData.length+' כרטיסיות נעשו.</p></header><ul class="paper-list">'+examCardsData.map(c=>{const s=sc[c.id];return '<li><a href="#exams/cards/'+c.id+'"><strong>'+safe(c.title)+'</strong><small>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · '+c.years:''))+(s?' · ציון אחרון: '+s.got+'/'+s.total:'')+'</small></a></li>';}).join('')+'</ul>';
+}
+function examCardPage(id){
+  const c=examCardsData.find(x=>x.id===id);
+  if(!c){examCardsIndex();return;}
+  const parts=c.parts,answers=[],checks=[];let part=0;let checked=[];let finished=false;
+  const draw=()=>{
+    let html='<a class="back" href="#exams/cards">חזרה לכרטיסיות</a><header class="chapter-header"><h1>'+safe(c.title)+'</h1><p>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · הופיעה בשחזורי '+c.years:''))+'</p></header><article class="case card-open">';
+    for(let i=0;i<=part&&i<parts.length;i++){
+      const p=parts[i];
+      html+='<section><h2>חלק '+(i===0?'א׳':'ב׳')+'</h2><p class="lede">'+inline(p.stem)+'</p><p><strong>'+safe(p.ask||ASK_A_DEFAULT)+'</strong></p>';
+      if(!checked[i]){
+        html+='<textarea class="open-answer" id="ans" rows="8" placeholder="כתבו כאן את התשובה, כמו שהייתם אומרים לבוחן: סימנים, סימפטומים, אבחנה מבדלת, ובחלק ב׳ גם בירור וטיפול.">'+safe(answers[i]||'')+'</textarea><button class="primary" id="check">בדיקה ←</button>';
+      } else {
+        const got=checks[i].filter(Boolean).length;
+        html+='<details class="my-answer"><summary>התשובה שלי</summary><p>'+safe(answers[i]||'(לא נכתבה תשובה)')+'</p></details><h3>מפתח התשובה · '+got+' מתוך '+p.key.length+' נקודות</h3><ul class="key-list">'+p.key.map((k,j)=>'<li><label><input type="checkbox" data-part="'+i+'" data-k="'+j+'" '+(checks[i][j]?'checked':'')+'> <span>'+inline(k[0])+'</span>'+(checks[i][j]&&kwHit(answers[i],k[1])?' <small class="auto-tag">זוהה בתשובה</small>':'')+'</label></li>').join('')+'</ul>';
+      }
+      html+='</section>';
+    }
+    const allChecked=checked.length===parts.length&&checked.every(Boolean);
+    if(checked[part]&&part+1<parts.length)html+='<button class="primary" id="next-part">לחלק ב׳ ←</button>';
+    if(allChecked){
+      if(c.followups&&c.followups.length)html+='<section><h2>שאלות ההמשך של הבוחנים</h2><p>חשבו על תשובה לפני שפותחים.</p>'+c.followups.map(f=>'<details class="followup"><summary>'+inline(f[0])+'</summary><p>'+inline(f[1])+'</p></details>').join('')+'</section>';
+      const got=checks.flat().filter(Boolean).length,total=parts.reduce((a,p)=>a+p.key.length,0);
+      html+='<p class="remember"><strong>סיכום: '+got+' מתוך '+total+' נקודות.</strong> '+inline(c.takeaway||'')+'</p><p><a href="#exams/cards">לכרטיסייה הבאה ←</a></p>';
+      if(!finished){finished=true;cardScores()[c.id]={got,total};save();}
+      else{cardScores()[c.id]={got,total};save();}
+    }
+    html+='</article>';
+    main.innerHTML=html;
+    const ta=main.querySelector('#ans');if(ta)ta.oninput=()=>{answers[part]=ta.value;};
+    const ck=main.querySelector('#check');if(ck)ck.onclick=()=>{answers[part]=ta?ta.value:'';checks[part]=parts[part].key.map(k=>kwHit(answers[part],k[1]));checked[part]=true;draw();};
+    main.querySelectorAll('.key-list input').forEach(b=>b.onchange=()=>{checks[Number(b.dataset.part)][Number(b.dataset.k)]=b.checked;const y=window.scrollY;draw();window.scrollTo(0,y);});
+    const np=main.querySelector('#next-part');if(np)np.onclick=()=>{part++;draw();const t=main.querySelector('#ans');if(t)t.focus();};
+  };
+  draw();
+}
+const ASK_A_DEFAULT='תאר את התמונה הקלינית, הבחן בין סימנים לסימפטומים, ודון באבחנה המבדלת.';
 function mixedPage(mode){
   activeTopic='mixed';
   const s=stats(questions);
@@ -440,14 +492,14 @@ function render(){
     topic(id,tab==='practice');
     if(tab==='read'&&extra){const s=document.getElementById(extra);if(s){s.scrollIntoView({block:'start'});s.focus({preventScroll:true});s.classList.add('flash');}}
   }
-  else if(page==='exams')exams(id);
+  else if(page==='exams')exams(id,tab);
   else if(page==='practice')mixedPage(id);
   else if(page==='search')searchPage(id);
   else if(page==='papers')papersPage(id);
   else if(page==='glossary')glossaryPage();
   else if(page==='cases')casesPage(id);
   else home();
-  const title=page==='topic'?scopeTitle(id):page==='exams'&&id?scopeTitle(id):page==='exams'?'שחזורי בחינות':page==='practice'?'תרגול מעורב':page==='search'?'חיפוש':page==='papers'?'מאמרים':page==='glossary'?'מילון מונחים':page==='cases'?'מקרים':'';
+  const title=page==='topic'?scopeTitle(id):page==='exams'&&id==='cards'?(tab&&examCardsData.find(c=>c.id===tab)?examCardsData.find(c=>c.id===tab).title:'מבחן סוף הסבב'):page==='exams'&&id?scopeTitle(id):page==='exams'?'שחזורי בחינות':page==='practice'?'תרגול מעורב':page==='search'?'חיפוש':page==='papers'?'מאמרים':page==='glossary'?'מילון מונחים':page==='cases'?'מקרים':'';
   document.title=(title?title+' | ':'')+SITE.shortTitle;
 }
 // ניווט, כותרת וכותרת תחתונה לפי SITE
