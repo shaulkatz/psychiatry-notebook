@@ -175,17 +175,17 @@ function exams(id,sub){
   if(exam&&questions.some(q=>q.topic===exam.id)){
     activeTopic=exam.id;
     const s=stats(questionsOf(exam.id));
-    main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>'+safe(exam.title)+'</h1><p>'+safe(exam.origin)+'</p><p>השאלות בנוסח השחזור המקורי, עם הסבר לכל אפשרות. המספור במשוב מפנה לשאלה המקורית.</p><div class="chapter-progress">'+meter(s,exam.title)+'<span>'+statLine(s)+'</span></div></header><div id="practice"></div>';
+    main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>'+safe(exam.title)+'</h1><p>'+safe(exam.origin)+'</p><p>לכל שאלה יש הסבר לתשובה הנכונה ולכל אחת מהאפשרויות.</p><div class="chapter-progress">'+meter(s,exam.title)+'<span>'+statLine(s)+'</span></div></header><div id="practice"></div>';
     practice();
     return;
   }
   const cards=items=>items.map(item=>{
     const list=questionsOf(item.id),count=list.length,s=stats(list);
-    const status=count ? count+' שאלות מעובדות'+(item.total?' מתוך '+item.total+' במקור':'') : 'המקור אותר וממתין לקליטה';
-    return '<section class="exam-panel"><h3>'+safe(item.title)+'</h3><p>'+safe(item.origin)+'</p><p>'+status+'</p>'+(count?'<div class="chapter-progress">'+meter(s,item.title)+'<span>'+statLine(s)+'</span></div>':'')+(count?'<a class="primary" href="#exams/'+item.id+'">'+(item.opening?'לתרגול בוחן הפתיחה':'לתרגול השחזור')+' ←</a> ':'')+(item.url?'<a href="'+safe(item.url)+'" target="_blank" rel="noopener">'+safe(item.urlLabel||SITE.sourceLabel)+'</a>':'')+'</section>';
+    const status=count ? count+' שאלות' : 'בקרוב';
+    return '<section class="exam-panel"><h3>'+safe(item.title)+'</h3><p>'+safe(item.origin)+'</p>'+(count?'':'<p>'+status+'</p>')+(count?'<div class="chapter-progress">'+meter(s,item.title)+'<span>'+statLine(s)+'</span></div>':'')+(count?'<a class="primary" href="#exams/'+item.id+'">'+(item.opening?'לתרגול בוחן הפתיחה':'לתרגול השחזור')+' ←</a> ':'')+(item.url?'<a href="'+safe(item.url)+'" target="_blank" rel="noopener">'+safe(item.urlLabel||SITE.sourceLabel)+'</a>':'')+'</section>';
   }).join('');
   const cardsDone=examCardsData.filter(c=>(state.cards||{})[c.id]).length;
-  const cardsSection=examCardsData.length?'<section><h2>מבחן סוף הסבב</h2><div class="recon-list"><section class="exam-panel"><h3>שחזור מבחן סוף הסבב · כרטיסיות</h3><p>'+examCardsData.length+' כרטיסיות משחזורי 2018–2022. מקרה בשני שלבים ושאלות פתוחות, כמו במבחן: כותבים תשובה חופשית, ואז בודקים אותה מול מפתח של נקודות (סימון אוטומטי לפי מילות מפתח, בלי AI).</p><p>'+cardsDone+' מתוך '+examCardsData.length+' נעשו.</p><a class="primary" href="#exams/cards">לאינדקס הכרטיסיות ←</a></section></div></section>':'';
+  const cardsSection=examCardsData.length?'<section><h2>מבחן סוף הסבב</h2><div class="recon-list"><section class="exam-panel"><h3>כרטיסיות מבחן סוף הסבב</h3><p>'+examCardsData.length+' מקרים כמו במבחן: מקרה בשני שלבים עם שאלות פתוחות. כותבים תשובה ובודקים אותה מול מפתח.</p><p>'+cardsDone+' מתוך '+examCardsData.length+' נעשו.</p><a class="primary" href="#exams/cards">לאינדקס הכרטיסיות ←</a></section></div></section>':'';
   main.innerHTML='<a class="back" href="#home">חזרה לנושאים</a><header class="chapter-header"><h1>שחזורי בחינות</h1><p>בחרו שחזור לפי המועד והנוסח.</p></header>'+(reconstructionSets.some(item=>item.opening)?'<section><h2>בחני פתיחה</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>item.opening))+'</div></section>':'')+'<section><h2>'+(reconstructionSets.some(item=>item.opening)?'שחזורים נוספים':'בוחן המבוא')+'</h2><div class="recon-list">'+cards(reconstructionSets.filter(item=>!item.opening))+'</div></section>'+cardsSection;
 }
 // ===== כרטיסיות מבחן סוף (שאלות פתוחות): כותבים תשובה, ואז מפתח כרשימת נקודות עם סימון אוטומטי לפי מילות מפתח (בלי AI)
@@ -199,14 +199,14 @@ function cardScores(){state.cards=state.cards||{};return state.cards;}
 function examCardsIndex(){
   const sc=cardScores();
   const done=examCardsData.filter(c=>sc[c.id]).length;
-  main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>מבחן סוף הסבב · כרטיסיות</h1><p>שחזור של כרטיסיות ממבחני סוף הסבב (2018–2022). כמו במבחן: מקרה בשני שלבים ושאלות פתוחות. כותבים תשובה חופשית, ואז נפתח מפתח התשובה כרשימת נקודות. הנקודות שזוהו בתשובה מסומנות אוטומטית לפי מילות מפתח, ואפשר לתקן את הסימון ידנית.</p><p>'+done+' מתוך '+examCardsData.length+' כרטיסיות נעשו.</p></header><ul class="paper-list">'+examCardsData.map(c=>{const s=sc[c.id];return '<li><a href="#exams/cards/'+c.id+'"><strong>'+safe(c.title)+'</strong><small>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · '+c.years:''))+(s?' · ציון אחרון: '+s.got+'/'+s.total:'')+'</small></a></li>';}).join('')+'</ul>';
+  main.innerHTML='<a class="back" href="#exams">חזרה לשחזורים</a><header class="chapter-header"><h1>מבחן סוף הסבב · כרטיסיות</h1><p>כמו במבחן: מקרה בשני שלבים. כותבים תשובה, ואז בודקים אותה מול מפתח של נקודות. נקודות שכתבתם מסומנות אוטומטית, ואפשר לשנות את הסימון.</p><p>'+done+' מתוך '+examCardsData.length+' כרטיסיות נעשו.</p></header><ul class="paper-list">'+examCardsData.map(c=>{const s=sc[c.id];return '<li><a href="#exams/cards/'+c.id+'"><strong>'+safe(c.title)+'</strong><small>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · '+c.years:''))+(s?' · ציון אחרון: '+s.got+'/'+s.total:'')+'</small></a></li>';}).join('')+'</ul>';
 }
 function examCardPage(id){
   const c=examCardsData.find(x=>x.id===id);
   if(!c){examCardsIndex();return;}
   const parts=c.parts,answers=[],checks=[];let part=0;let checked=[];let finished=false;
   const draw=()=>{
-    let html='<a class="back" href="#exams/cards">חזרה לכרטיסיות</a><header class="chapter-header"><h1>'+safe(c.title)+'</h1><p>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · הופיעה בשחזורי '+c.years:''))+'</p></header><article class="case card-open">';
+    let html='<a class="back" href="#exams/cards">חזרה לכרטיסיות</a><header class="chapter-header"><h1>'+safe(c.title)+'</h1><p>'+safe((scopeTitle(c.chapter)||'')+(c.years?' · במבחנים: '+c.years:''))+'</p></header><article class="case card-open">';
     for(let i=0;i<=part&&i<parts.length;i++){
       const p=parts[i];
       html+='<section><h2>חלק '+(i===0?'א׳':'ב׳')+'</h2><p class="lede">'+inline(p.stem)+'</p><p><strong>'+safe(p.ask||ASK_A_DEFAULT)+'</strong></p>';
@@ -254,8 +254,8 @@ function settings(stage,presetMode){
   const intro=mixed
     ? '<p>הסבב נבנה באקראי מתוך השאלות שבחרתם.</p>'
     : chapter
-    ? '<p>לבדיקת הכיסוי של הפרק, בחרו את כל תתי־הנושאים ואת כל השאלות המתאימות. בסיום יופיע פירוט לפי תת־נושא.</p>'
-    : '<p>הסבב כולל שאלות מהשחזור שבחרת, לפי הסדר שבו הופיעו במקור.</p>';
+    ? '<p>בחרו נושא, סוג תרגול ומספר שאלות.</p>'
+    : '<p>השאלות מוצגות לפי הסדר שבו הופיעו בבוחן.</p>';
   const topicFilter=mixed
     ? '<label>מקור השאלות<select name="topic"><option value="">כל השאלות במאגר</option>'+topics.map(([id,title])=>'<option value="'+id+'">'+safe(title)+'</option>').join('')+'<option value="recon">שחזורים ובחני פתיחה</option></select></label>'
     : '';
@@ -324,7 +324,7 @@ function appearsAlso(q){
 function feedback(q){
   const exam=reconstructionSets.find(item=>item.id===q.topic);
   const source=exam
-    ? '<p class="source">שאלה '+q.number+' במקור'+(q.page?', עמ׳ '+q.page:'')+(exam.url?' · <a href="'+safe(exam.url)+'" target="_blank" rel="noopener">תיקיית המקור</a>':'')+'</p>'
+    ? '<p class="source">שאלה '+q.number+' בבוחן</p>'
     : '<p class="source">'+(presentationLink(q.topic)?presentationLink(q.topic)+' · ':'')+'<a href="#topic/'+q.topic+'/read/'+q.section+'">לסעיף בסיכום</a></p>';
   const also=appearsAlso(q);
   return '<section class="feedback">'+(also.length?'<p class="also">⭐ שאלה חוזרת: הופיעה גם ב'+also.map(t=>safe(t)).join(', ')+'</p>':'')+'<p class="explanation">'+safe(q.e)+'</p>'+(q.clarification?'<p class="explanation">'+safe(q.clarification)+'</p>':'')+'<h3>הסבר לכל אפשרות</h3><ol class="review">'+q.a.map((a,i)=>'<li'+(i===q.k?' class="is-correct"':'')+'><strong>'+letters[i]+'. '+safe(a)+'</strong><p>'+safe(q.x[i])+'</p></li>').join('')+'</ol>'+source+'</section>';
@@ -467,7 +467,7 @@ function casesPage(id){
   activeTopic='cases';
   const c=casesData.find(x=>x.id===id);
   if(!c){
-    main.innerHTML='<a class="back" href="#home">חזרה לנושאים</a><header class="chapter-header"><h1>מקרים</h1><p>מקרים קליניים או יישומיים, שלב אחרי שלב.</p></header><ul class="paper-list">'+casesData.map(x=>'<li><a href="#cases/'+x.id+'"><strong>'+safe(x.title)+'</strong>'+(x.chapter&&scopeTitle(x.chapter)?'<small>'+safe(scopeTitle(x.chapter))+'</small>':'')+'</a></li>').join('')+'</ul>';
+    main.innerHTML='<a class="back" href="#home">חזרה לנושאים</a><header class="chapter-header"><h1>מקרים</h1><p>המקרים המתגלגלים של הסבב. כל מקרה נחשף שלב אחרי שלב.</p></header><ul class="paper-list">'+casesData.map(x=>'<li><a href="#cases/'+x.id+'"><strong>'+safe(x.title)+'</strong>'+(x.chapter&&scopeTitle(x.chapter)?'<small>'+safe(scopeTitle(x.chapter))+'</small>':'')+'</a></li>').join('')+'</ul>';
     return;
   }
   let step=0;const picks=[];

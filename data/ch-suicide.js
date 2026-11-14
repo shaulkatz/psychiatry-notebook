@@ -1,7 +1,7 @@
 'use strict';
 chapters.suicide = {
  intro: 'אובדנות היא מצב החירום השכיח והחשוב ביותר בפסיכיאטריה. הפרק מסביר מי בסיכון, מה מגן, איך שואלים ומעריכים סיכון, ומה עושים כשהסיכון גבוה.',
- source: {url: MOODLE + '263967', label: 'אובדנות · פרופ׳ גיל זלצמן', note: 'הקלטה במודל, דורש התחברות'},
+ source: {url: MOODLE + '263967', label: 'אובדנות · פרופ׳ גיל זלצמן', note: 'דורש התחברות למודל'},
  sections: [
   ['terms','מושגים',[
    '- **מחשבות אובדניות (Suicidal Ideation):** מחשבות על מוות או על פגיעה עצמית. יכולות להיות **פסיביות** ("היה עדיף לא להתעורר") או **אקטיביות** ("אני חושב להרוג את עצמי"), עם תוכנית או בלעדיה.',
@@ -21,7 +21,7 @@ chapters.suicide = {
    '- **מחלה גופנית כרונית** וכאב כרוני.',
    '- היסטוריה משפחתית של אובדנות.',
    '- **הבעת כוונה** בפני אחרים.',
-   'זכרו את **SAD PERSONS**, בגרסה שבסרטון: **S**ex (זכר), **A**ge (צעירים וקשישים), **D**epression, **P**revious attempt (החשוב ביותר), **E**xcessive alcohol or substance use, **R**ational thinking loss (פסיכוזה), **S**ickness (מחלה כרונית), **O**rganized plan, **N**o social support, **S**tated future intent (הבעת כוונה).',
+   'זכרו את **SAD PERSONS**: **S**ex (זכר), **A**ge (צעירים וקשישים), **D**epression, **P**revious attempt (החשוב ביותר), **E**xcessive alcohol or substance use, **R**ational thinking loss (פסיכוזה), **S**ickness (מחלה כרונית), **O**rganized plan, **N**o social support, **S**tated future intent (הבעת כוונה).',
    'גם בלי גורמי סיכון, אדם יכול לפגוע בעצמו כמעשה **אימפולסיבי** ברגע של לחץ.',
    '! ניסיון קודם הוא גורם הסיכון המשמעותי ביותר. תמיכה חברתית חזקה היא גורם **מגן**, לא גורם סיכון.'
   ]],
