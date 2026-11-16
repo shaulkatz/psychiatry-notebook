@@ -235,3 +235,4 @@ mark{background:var(--mark,#f3dfa6);color:inherit;padding:0 1px}
 .qnav{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line,rgba(127,127,127,.25))}
 .qnav button{margin:0}
 @media(max-width:720px){.qnav{gap:12px;margin-top:26px}.qnav button{flex:0 1 calc(50% - 6px);min-height:48px;padding-inline:10px;justify-content:center;text-align:center}}
+.sec-practice{margin:18px 0 6px}.chapter-end{flex-wrap:wrap}

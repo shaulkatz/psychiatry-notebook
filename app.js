@@ -95,6 +95,11 @@ function home(){
   };
 }
 // קישור למקור הפרק: chapters[id].source = {url, label, note}
+function sectionPracticeButton(topicId,sid){
+  const ch=chapters[topicId];if(!ch?.sectionPractice)return '';
+  const n=questions.filter(q=>q.topic===topicId&&q.section===sid).length;if(!n)return '';
+  return '<p class="sec-practice"><button type="button" class="secondary" data-practice="'+sid+'">'+safe(ch.sectionPracticeLabel||'תרגול על הסעיף')+' ('+n+' שאלות) ←</button></p>';
+}
 function presentationLink(topicId=activeTopic){
   const src=chapters[topicId]?.source;
   if(!src?.url)return '';
@@ -159,8 +164,13 @@ function topic(id,tab){
   const kp=keyPointsData[id]?.length;
   const contents='<aside class="contents"><strong>בפרק הזה</strong>'+(kp?'<button type="button" data-section="keypoints">נקודות מפתח</button>':'')+chapter.sections.map(([sid,stitle])=>'<button type="button" data-section="'+sid+'">'+safe(stitle)+'</button>').join('')+'</aside>';
   const readButton='<button type="button" class="secondary read-toggle" aria-pressed="'+(state.read[id]?'true':'false')+'">'+(state.read[id]?'✓ סימנת שקראת את הפרק':'סימון הפרק כנקרא')+'</button>';
-  main.innerHTML=header+tabs+(tab?'<div id="practice"></div>':'<div class="reading">'+contents+'<article><p class="lede">'+safe(chapter.intro)+'</p>'+keyPointsBox(id)+chapter.sections.map(([sid,stitle,paragraphs])=>'<section id="'+sid+'" tabindex="-1"><h2>'+safe(stitle)+'</h2>'+readingSection(sid,paragraphs)+'</section>').join('')+(presentationLink(id)?'<p class="source">'+presentationLink(id)+'</p>':'')+'<div class="chapter-end">'+readButton+'<a class="primary" href="#topic/'+id+'/practice">לתרגול הפרק ←</a></div>'+pager+'</article></div>');
+  main.innerHTML=header+tabs+(tab?'<div id="practice"></div>':'<div class="reading">'+contents+'<article><p class="lede">'+safe(chapter.intro)+'</p>'+keyPointsBox(id)+chapter.sections.map(([sid,stitle,paragraphs])=>'<section id="'+sid+'" tabindex="-1"><h2>'+safe(stitle)+'</h2>'+readingSection(sid,paragraphs)+sectionPracticeButton(id,sid)+'</section>').join('')+(presentationLink(id)?'<p class="source">'+presentationLink(id)+'</p>':'')+'<div class="chapter-end">'+readButton+'<a class="primary" href="#topic/'+id+'/practice">לתרגול הפרק ←</a>'+(chapter.quizSet&&reconstructionSets.some(x=>x.id===chapter.quizSet)?'<a class="primary" href="#exams/'+chapter.quizSet+'">'+safe(chapter.quizLabel||'לבוחן הכנה')+' ←</a>':'')+'</div>'+pager+'</article></div>');
   if(tab){practice();return;}
+  main.querySelectorAll('[data-practice]').forEach(button=>button.onclick=()=>{
+    const ids=shuffle(questions.filter(q=>q.topic===id&&q.section===button.dataset.practice).map(q=>q.id));
+    if(!ids.length)return;
+    state.runs[id]={ids,idx:0,picks:[],t:Date.now()};save();location.hash='#topic/'+id+'/practice';
+  });
   main.querySelectorAll('[data-section]').forEach(button=>button.onclick=()=>{
     const section=document.getElementById(button.dataset.section);
     section.focus({preventScroll:true});section.scrollIntoView({block:'start',behavior:'smooth'});
